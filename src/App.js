@@ -18,7 +18,7 @@ function App() {
         <Route exact path='/health'   element={<News pagesize={6} category="health" />} />
         <Route exact path='/sports' element={<News pagesize={6} category="sports" />} />
         <Route exact path='/science'element={<News pagesize={6} category="science" />} />
-  <Route exact path='/technology'element={<News pagesize={6} category="technology" />} />
+        <Route exact path='/technology'element={<News pagesize={6} category="technology" />} />
       </Routes> 
     </Router>
   </div>

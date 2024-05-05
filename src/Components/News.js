@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import Newscards from "./Newscards";
-import Spinner from "./Spinner"
+import Spinner from "./Spinner";
+import InfiniteScroll from 'react-infinite-scroll-component';
 export default class News extends Component {
   // articles = [
   //   {
@@ -75,81 +76,118 @@ export default class News extends Component {
     super();
     this.state = {
       articles: [],
-      page:1,
-      loading :false,
+      page: 1,
+      loading: false,
+      totalResults:100,
     };
   }
-   clicknext= async ()=>{
-    // console.log("fbejbej");
-    if((this.state.page+1)<=Math.ceil(this.state.totalResults/this.props.pagesize)){
-    let endpoint=`https://newsapi.org/v2/top-headlines?country=in&category=${this.props.category}&apiKey=b5ab939ac4324201815a188807a43a83&page=${this.state.page + 1}&pagesize=${this.props.pagesize}`;
-    this.setState({loading:true});
-    let data=await fetch(endpoint);
-    let d= await data.json();
-    // console.log(d.articles.length);
-    // console.log(d.articles);
+  // clicknext = async () => {
+  //   // console.log("fbejbej");
+  //   if (
+  //     this.state.page + 1 <=
+  //     Math.ceil(this.state.totalResults / this.props.pagesize)
+  //   ) {
+  //     let endpoint = `https://newsapi.org/v2/top-headlines?country=in&category=${
+  //       this.props.category
+  //     }&apiKey=b5ab939ac4324201815a188807a43a83&page=${
+  //       this.state.page + 1
+  //     }&pagesize=${this.props.pagesize}`;
+  //     this.setState({ loading: true });
+  //     let data = await fetch(endpoint);
+  //     let d = await data.json();
+  //     // console.log(d.articles.length);
+  //     // console.log(d.articles);
+  //     this.setState({
+  //       articles: d.articles,
+  //       page: this.state.page + 1,
+  //       loading: false,
+  //     });
+  //   }
+  // };
+  // clickprev = async () => {
+  //   if (this.state.page > 1) {
+  //     let endpoint = `https://newsapi.org/v2/top-headlines?country=in&category=${
+  //       this.props.category
+  //     }&apiKey=b5ab939ac4324201815a188807a43a83&page=${
+  //       this.state.page - 1
+  //     }&pagesize=${this.props.pagesize}`;
+  //     this.setState({ loading: true });
+  //     let data = await fetch(endpoint);
+  //     let d = await data.json();
+  //     // console.log(d.articles.length);
+  //     // console.log(d.articles);
+  //     this.setState({
+  //       articles: d.articles,
+  //       page: this.state.page - 1,
+  //       loading: false,
+  //       totalResults:0 
+  //     });
+  //   }
+  // };
+  fetchData=async ()=>{
+    let endpoint = `https://newsapi.org/v2/top-headlines?country=in&category=${this.props.category}&apiKey=b5ab939ac4324201815a188807a43a83&page=${this.state.page+1}&pagesize=${this.props.pagesize}`;
+    this.setState({ loading: true });
+    let data = await fetch(endpoint);
+    let d = await data.json();
     this.setState({
-      articles: d.articles,
+      articles:this.state.articles.concat(d.articles),
       page:this.state.page+1,
       loading:false,
-    });
-    }
+    })
   }
-  clickprev=async ()=>{
-   if(this.state.page>1){
-    let endpoint=`https://newsapi.org/v2/top-headlines?country=in&category=${this.props.category}&apiKey=b5ab939ac4324201815a188807a43a83&page=${this.state.page - 1}&pagesize=${this.props.pagesize}`;
-    this.setState({loading:true});
-    let data=await fetch(endpoint);
-    let d= await data.json();
+  async componentDidMount() {
+    let endpoint = `https://newsapi.org/v2/top-headlines?country=in&category=${this.props.category}&apiKey=b5ab939ac4324201815a188807a43a83&page=${this.state.page+1}&pagesize=${this.props.pagesize}`;
+    this.setState({ loading: true });
+    let data = await fetch(endpoint);
+    let d = await data.json();
+    // console.log(d.totalResults);
     // console.log(d.articles.length);
     // console.log(d.articles);
     this.setState({
       articles: d.articles,
-      page:this.state.page-1,
-      loading:false,
-   });
-  }
-  }
-  async componentDidMount(){
-    let endpoint=`https://newsapi.org/v2/top-headlines?country=in&category=${this.props.category}&apiKey=b5ab939ac4324201815a188807a43a83&page=${this.state.page}&pagesize=${this.props.pagesize}`;
-    this.setState({loading:true});
-    let data=await fetch(endpoint);
-    let d= await data.json();
-    // console.log(d.totalResults);  
-    // console.log(d.articles.length);
-    // console.log(d.articles);
-    this.setState({
-      articles: d.articles,
-      loading:false,
-      totalResults:d.totalResults,
-
+      loading: false,
+      totalResults: d.totalResults,
     });
     // console.log();
-
   }
   render() {
-    let {pagesize}=this.props;
+    let { pagesize } = this.props;
     return (
-      
-        <div className="container my-3">
-       { this.state.loading==false?
-        <div className="row">
-        {this.state.articles.map((ele)=>{
-        if(ele.description!=="[Removed]")
-          return (
-          <div className="col-md-4" key={ele.description}>
-            <Newscards title={ele.title} 
-            urlToImage={ele.urlToImage ?ele.urlToImage:"https://img.freepik.com/free-photo/beautiful-aerial-shot-forest-enveloped-creepy-mist-fog_181624-2659.jpg?size=626&ext=jpg&ga=GA1.1.1730265882.1714756339&semt=sph"} description={ele.description} 
-            srcurl={ele.url}/>
-          </div>) 
-        }) } 
-        </div> : <Spinner></Spinner>}
-        
-        <div className="justify-content-between d-flex">
-        <button disabled={this.state.page<=1} type="button" className="btn btn-primary" onClick={this.clickprev}>Previous</button>
-        <button disabled={(this.state.page+1)>Math.ceil(this.state.totalResults/this.props.pagesize)} type="button" className="btn btn-primary" onClick={this.clicknext}>Next</button>
-        </div>
-      </div>
+      <>
+        {/* {this.state.loading && <Spinner/>} */}
+      <InfiniteScroll
+          dataLength={this.state.articles.length} 
+          next={this.fetchData}
+          hasMore={this.fetchData}
+          loader={this.state.page +1 <=Math.ceil(this.state.totalResults / this.props.pagesize)?<><p style={{ textAlign: "center" }}>
+          <b>Loading....</b>
+        </p></>:<><p style={{ textAlign: "center" }}>
+          <b>Yay! You have seen it all</b>
+        </p></>}
+        >
+          <div className="container my-3">
+          <div className="row">
+            {this.state.articles.map((ele) => {
+              // if (ele.description!==undefined && ele.description !== "[Removed]")
+                return (
+                  <div className="col-md-4" key={ele.description}>
+                    <Newscards
+                      title={ele.title}
+                      urlToImage={
+                        ele.urlToImage
+                          ? ele.urlToImage
+                          : "https://img.freepik.com/free-photo/beautiful-aerial-shot-forest-enveloped-creepy-mist-fog_181624-2659.jpg?size=626&ext=jpg&ga=GA1.1.1730265882.1714756339&semt=sph"
+                      }
+                      description={ele.description}
+                      srcurl={ele.url}
+                    />
+                  </div>
+                );
+            })}
+          </div>
+          </div>
+      </InfiniteScroll>
+      </>
     );
   }
 }
